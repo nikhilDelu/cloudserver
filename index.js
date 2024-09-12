@@ -70,7 +70,7 @@ app.post("/api/stream", async (req, res) => {
       });
     }
 
-    const thumbnails = videoDetails.thumbnail.thumbnails;
+    const thumbnails = await videoDetails.thumbnail.thumbnails;
     thumbnails.sort((a, b) => (a.width < b.width ? -1 : 1));
 
     const newStream = await Stream.create({
@@ -80,9 +80,9 @@ app.post("/api/stream", async (req, res) => {
       title: videoDetails.title || "No Title",
       smallImg:
         thumbnails.length > 1
-          ? thumbnails[thumbnails.length - 2].url
+          ? thumbnails[thumbnails.length - 2]?.url
           : thumbnails[0]?.url || "defaultSmallImgUrl",
-      bigImg: thumbnails[thumbnails.length - 1].url || "defaultBigImgUrl",
+      bigImg: thumbnails[thumbnails.length - 1]?.url || "defaultBigImgUrl",
     });
 
     return res
@@ -92,7 +92,7 @@ app.post("/api/stream", async (req, res) => {
     console.error(error);
     return res
       .status(500)
-      .json({ message: `Error while adding a stream: ${error}` });
+      .json({ message: `Error while adding a stream new!: ${error}` });
   }
 });
 
