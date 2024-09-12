@@ -57,7 +57,7 @@ app.post("/api/stream", async (req, res) => {
       isYt[1] ||
       data.url.split("v=")[1]?.split("&")[0] ||
       data.url.split("youtu.be/")[1]?.split("?")[0];
-
+    console.log("extracted id : ", extractedId);
     const videoDetails = await getVideoDetails(extractedId);
 
     if (!videoDetails) {
