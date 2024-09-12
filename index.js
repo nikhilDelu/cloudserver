@@ -12,7 +12,7 @@ app.use(express.json());
 const corsOptions = {
   origin: "*", // Temporarily allow all origins for testing
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["*"],
 };
 app.use(cors(corsOptions));
 
@@ -25,10 +25,10 @@ const CreateSchemeSchema = z.object({
   url: z.string(),
 });
 
-async function getVideoDetails(videoId, retries = 3) {
+async function getVideoDetails(videoId, retries = 30) {
   try {
-    const info = await getInfo(videoId);
-    return info.videoDetails;
+    const { videoDetails } = await getInfo(videoId);
+    return videoDetails;
   } catch (error) {
     if (retries > 0) {
       console.warn(`Retrying to fetch video details... (${3 - retries + 1})`);
@@ -60,9 +60,18 @@ app.post("/api/stream", async (req, res) => {
     console.log("extracted id : ", extractedId);
     const videoDetails = await getVideoDetails(extractedId);
 
-    // if (!videoDetails) {
-    //   return res.status(500).json({ message: "Failed to fetch video details" });
-    // }
+    if (!videoDetails) {
+      return res
+        .status(500)
+        .json({
+          message:
+            "Failed to fetch video details" +
+            "details: " +
+            videoDetails +
+            "id: " +
+            extractedId,
+        });
+    }
 
     const thumbnails = videoDetails.thumbnails || [];
     thumbnails.sort((a, b) => a.width - b.width);
