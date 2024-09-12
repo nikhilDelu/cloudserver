@@ -60,9 +60,9 @@ app.post("/api/stream", async (req, res) => {
     console.log("extracted id : ", extractedId);
     const videoDetails = await getVideoDetails(extractedId);
 
-    if (!videoDetails) {
-      return res.status(500).json({ message: "Failed to fetch video details" });
-    }
+    // if (!videoDetails) {
+    //   return res.status(500).json({ message: "Failed to fetch video details" });
+    // }
 
     const thumbnails = videoDetails.thumbnails || [];
     thumbnails.sort((a, b) => a.width - b.width);
