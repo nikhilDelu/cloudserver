@@ -61,16 +61,14 @@ app.post("/api/stream", async (req, res) => {
     const videoDetails = await getVideoDetails(extractedId);
 
     if (!videoDetails) {
-      return res
-        .status(500)
-        .json({
-          message:
-            "Failed to fetch video details" +
-            "details: " +
-            videoDetails +
-            "id: " +
-            extractedId,
-        });
+      return res.status(500).json({
+        message:
+          "Failed to fetch video detailssssss" +
+          "details: " +
+          videoDetails +
+          "id: " +
+          extractedId,
+      });
     }
 
     const thumbnails = videoDetails.thumbnails || [];
