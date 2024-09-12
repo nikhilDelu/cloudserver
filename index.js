@@ -1,8 +1,7 @@
 const express = require("express");
 const { connect } = require("mongoose");
 
-const pkg = require("ytdl-core");
-const { getInfo } = pkg;
+const youtubesearchapi = require("youtube-search-api");
 const { z } = require("zod");
 const { Stream } = require("./models/Stream.js");
 const cors = require("cors");
@@ -25,19 +24,19 @@ const CreateSchemeSchema = z.object({
   url: z.string(),
 });
 
-async function getVideoDetails(videoId, retries = 30) {
-  try {
-    const { videoDetails } = await getInfo(videoId);
-    return videoDetails;
-  } catch (error) {
-    if (retries > 0) {
-      console.warn(`Retrying to fetch video details... (${3 - retries + 1})`);
-      return getVideoDetails(videoId, retries - 1);
-    } else {
-      console.error("Error fetching video details after retries:", error);
-    }
-  }
-}
+// async function getVideoDetail(videoId, retries = 30) {
+//   try {
+//     const { videoDetails } = await youtubesearchapi.GetVideoDetails(videoId);
+//     return videoDetails;
+//   } catch (error) {
+//     if (retries > 0) {
+//       console.warn(`Retrying to fetch video details... (${3 - retries + 1})`);
+//       return getVideoDetail(videoId, retries - 1);
+//     } else {
+//       console.error("Error fetching video details after retries:", error);
+//     }
+//   }
+// }
 
 app.post("/api/stream", async (req, res) => {
   await connect(
@@ -58,7 +57,7 @@ app.post("/api/stream", async (req, res) => {
       data.url.split("v=")[1]?.split("&")[0] ||
       data.url.split("youtu.be/")[1]?.split("?")[0];
     console.log("extracted id : ", extractedId);
-    const videoDetails = await getVideoDetails(extractedId);
+    const videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
 
     if (!videoDetails) {
       return res.status(500).json({
@@ -71,7 +70,7 @@ app.post("/api/stream", async (req, res) => {
       });
     }
 
-    const thumbnails = videoDetails.thumbnails || [];
+    const thumbnails = videoDetails.thumbnail.thumbnails || [];
     thumbnails.sort((a, b) => a.width - b.width);
 
     const newStream = await Stream.create({
