@@ -10,12 +10,12 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 const corsOptions = {
-  origin: "https://cloud-assignment-nine.vercel.app/",
-  methods: ["GET", "POST"],
+  origin: "*", // Temporarily allow all origins for testing
+  methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
-
 app.use(cors(corsOptions));
+
 app.options("/api/stream", cors(corsOptions));
 
 const YT_REGEX =
