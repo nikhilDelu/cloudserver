@@ -12,7 +12,7 @@ app.use(express.json());
 const corsOptions = {
   origin: "*", // Temporarily allow all origins for testing
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["*"],
 };
 app.use(cors(corsOptions));
 
