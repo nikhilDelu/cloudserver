@@ -70,8 +70,8 @@ app.post("/api/stream", async (req, res) => {
       });
     }
 
-    const thumbnails = videoDetails.thumbnail.thumbnails || [];
-    thumbnails.sort((a, b) => a.width - b.width);
+    const thumbnails = videoDetails.thumbnail.thumbnails;
+    thumbnails.sort((a, b) => (a.width < b.width ? -1 : 1));
 
     const newStream = await Stream.create({
       type: "Youtube",
