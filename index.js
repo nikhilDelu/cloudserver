@@ -10,12 +10,13 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 const corsOptions = {
-  origin: "https://cloud-assignment-nine.vercel.app/", // Allow only this domain
-  methods: ["GET", "POST"], // Restrict allowed methods
-  allowedHeaders: ["Content-Type", "Authorization"], // Restrict allowed headers
+  origin: "https://cloud-assignment-nine.vercel.app/",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
+app.options("/api/stream", cors(corsOptions));
 
 const YT_REGEX =
   /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|playlist\?|watch\?v=|watch\?.+(?:&|&#38;);v=))([a-zA-Z0-9\-_]{11})?(?:(?:\?|&|&#38;)index=((?:\d){1,3}))?(?:(?:\?|&|&#38;)?list=([a-zA-Z\-_0-9]{34}))?(?:\S+)?/;
@@ -24,12 +25,17 @@ const CreateSchemeSchema = z.object({
   url: z.string(),
 });
 
-async function getVideoDetails(videoId) {
+async function getVideoDetails(videoId, retries = 3) {
   try {
     const info = await getInfo(videoId);
     return info.videoDetails;
   } catch (error) {
-    console.error("Error fetching video details:", error);
+    if (retries > 0) {
+      console.warn(`Retrying to fetch video details... (${3 - retries + 1})`);
+      return getVideoDetails(videoId, retries - 1);
+    } else {
+      console.error("Error fetching video details after retries:", error);
+    }
   }
 }
 
@@ -46,7 +52,12 @@ app.post("/api/stream", async (req, res) => {
       return res.status(400).json({ message: "Invalid YouTube URL!" });
     }
 
-    const extractedId = isYt[1] || data.url.split("?v=")[1]?.split("&")[0];
+    // Extract video ID more robustly
+    const extractedId =
+      isYt[1] ||
+      data.url.split("v=")[1]?.split("&")[0] ||
+      data.url.split("youtu.be/")[1]?.split("?")[0];
+
     const videoDetails = await getVideoDetails(extractedId);
 
     if (!videoDetails) {
