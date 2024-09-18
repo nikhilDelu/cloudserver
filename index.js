@@ -44,40 +44,33 @@ app.post("/api/stream", async (req, res) => {
   ); // Replace with your actual connection string
 
   try {
-    const data = CreateSchemeSchema.parse(req.body);
-    const isYt = data.url.match(YT_REGEX);
+    // const data = CreateSchemeSchema.parse(req.body);
+    // const isYt = data.url.match(YT_REGEX);
 
-    if (!isYt) {
-      return res.status(400).json({ message: "Invalid YouTube URL!" });
+    // if (!isYt) {
+    //   return res.status(400).json({ message: "Invalid YouTube URL!" });
+    // }
+
+    // // Extract video ID more robustly
+    // const extractedId =
+    //   isYt[1] ||
+    //   data.url.split("v=")[1]?.split("&")[0] ||
+    //   data.url.split("youtu.be/")[1]?.split("?")[0];
+    // console.log("extracted id : ", extractedId);
+    // const videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
+    const { song, url } = req.body;
+    if (!song) {
+      return res.status(500).json({ message: "song not found" });
     }
 
-    // Extract video ID more robustly
-    const extractedId =
-      isYt[1] ||
-      data.url.split("v=")[1]?.split("&")[0] ||
-      data.url.split("youtu.be/")[1]?.split("?")[0];
-    console.log("extracted id : ", extractedId);
-    const videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
-
-    if (!videoDetails) {
-      return res.status(500).json({
-        message:
-          "Failed to fetch video detailssssss" +
-          "details: " +
-          videoDetails +
-          "id: " +
-          extractedId,
-      });
-    }
-
-    const thumbnails = await videoDetails.thumbnail.thumbnails;
+    const thumbnails = await song.thumbnail.thumbnails;
     thumbnails.sort((a, b) => (a.width < b.width ? -1 : 1));
 
     const newStream = await Stream.create({
       type: "Youtube",
-      url: data.url,
-      extractedId,
-      title: videoDetails.title || "No Title",
+      url,
+      extractedId: song.id,
+      title: song.title || "No Title",
       smallImg:
         thumbnails.length > 1
           ? thumbnails[thumbnails.length - 2]?.url
